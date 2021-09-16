@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="module">
+      /*
+        Because this is a script type="module" it runs async and will not block loading - that means there is a chance the
+        module src/main.tsx below may finish loading and execute before this module runs.
+        Here I have changed the backend integration snippet given in the docs slightly to introduce an artificial delay so
+        the issue happens consistently. In my real environment the snippet is identical to that provided by the docs.
+        I run into the issue consistently, on _some_ pages of my app - guessing it depends on the combination of modules this
+        page uses. I don't know why the other module runs faster than this inline snippet, browser caching?
+        Or the Vite devserver is just too fast 8)
+      */
+      const FAKE_DEMO_DELAY = 1000;
+      setTimeout(async () => {
+        const RefreshRuntimeModule = await import(
+          "http://localhost:3030/@react-refresh"
+        );
+        const RefreshRuntime = RefreshRuntimeModule.default;
+        RefreshRuntime.injectIntoGlobalHook(window);
+        window.$RefreshReg$ = () => {};
+        window.$RefreshSig$ = () => (type) => type;
+        window.__vite_plugin_react_preamble_installed__ = true;
+      }, FAKE_DEMO_DELAY);
+    </script>
+
+    <!-- if development -->
+    <script type="module" src="http://localhost:3030/@vite/client"></script>
+
+    <!-- rendered via manifest.json in real app -->
+    <script type="module" src="http://localhost:3030/src/main.tsx"></script>
+  </body>
+</html>
